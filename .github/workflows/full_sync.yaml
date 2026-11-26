@@ -49,44 +49,18 @@ jobs:
             echo "No changes to commit"
           fi
 
-      - name: Stage JSON Files and 404 Page
-        run: |
-          set -euo pipefail
-          rm -rf pages_build
-          mkdir -p pages_build
-
-          # Copy only .json files while preserving directory paths; exclude build/temp dirs
-          find . \
-            -path './.git' -prune -o \
-            -path './.github' -prune -o \
-            -path './pages_build' -prune -o \
-            -path './temp_data' -prune -o \
-            -type f -name '*.json' -print0 | while IFS= read -r -d '' file; do
-              rel="${file#./}"
-              mkdir -p "pages_build/$(dirname "$rel")"
-              cp "$file" "pages_build/$rel"
-            done
-
-          cat <<'EOF' > pages_build/404.html
-          <!doctype html>
-          <html lang="en">
-          <head>
-            <meta charset="utf-8" />
-            <title>404 - Not Found</title>
-          </head>
-          <body>
-            <h1>404 - Not Found</h1>
-          </body>
-          </html>
-          EOF
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload Pages Artifact
+      - name: Remove unwanted root files
+        run: |
+          rm -f ./*.py ./*.txt
+          echo "VintHub - Not Found" > 404.html
+
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: pages_build
+          path: '.'
 
       - name: Deploy to GitHub Pages
         id: deployment
