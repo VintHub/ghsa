@@ -6,10 +6,19 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -79,3 +88,20 @@ jobs:
           else
             echo "No changes to commit"
           fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Remove unwanted root files
+        run: |
+          rm -f ./*.py ./*.txt
+          echo "VintHub - Not Found" > 404.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
